@@ -20,12 +20,14 @@ From here, you can drive with a gamepad of your choice with these controls:
 
 ## Features
 
+- Adds controller support
 - Maps horizontal analogic stick input linearly to the car's steering 
 - 10% deadzone (hardcoded (fuck you))
 - Changes the steering according to the car's speed, keeping linearity (disabled whilst sliding to allow for countersteering)
 - Disables "Invalid replay detected!" dialog box
 
-## Disclosures
+## Disclaimers
 
 - This mod is fully vibe coded lmaoo but it works well from my experience so like use it if you want I guess
 - Using controller to play using this mod will invalidate your times, use at your own risk on your account
+- You cannot rebind any of the keybinds in the settings to controller inputs currently as is
