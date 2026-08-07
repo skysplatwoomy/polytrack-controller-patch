@@ -94,6 +94,12 @@ def patch_main(source: str) -> str:
     )
     source = replace_once(
         source,
+        'submitLeaderboard(e,t,n,i,r,a,s,o){return new Promise(',
+        'submitLeaderboard(e,t,n,i,r,a,s,o){if(!0)return Promise.resolve({uploadId:null,positionChange:null});return new Promise(',
+        "disable leaderboard time uploads",
+    )
+    source = replace_once(
+        source,
         'controlCar(e,t,n,i,a,s){const l={messageType:o.ControlCar,carId:e,up:t,right:n,down:i,left:a,reset:s};',
         'controlCar(e,t,n,i,a,s,c,d){const l={messageType:o.ControlCar,carId:e,up:t,right:n,down:i,left:a,reset:s,steering:c??0,analogSteering:!!d||Number.isFinite(c)&&Math.abs(c)>1e-4};',
         "controlCar message shape",

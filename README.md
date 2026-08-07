@@ -24,7 +24,8 @@ From here, you can drive with a gamepad of your choice with these controls:
 - Maps horizontal analogic stick input linearly to the car's steering 
 - 10% deadzone (hardcoded (fuck you))
 - Changes the steering according to the car's speed, keeping linearity (disabled whilst sliding to allow for countersteering)
-- Disables "Invalid replay detected!" dialog box
+- Disables "Invalid replay detected!" dialog box (Not even sure if this is even needed now but keeping it anyways)
+- Disables uploading times to leaderboard (This mod is effectively a cheat)
 
 ## Disclaimers
 
