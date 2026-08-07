@@ -1,5 +1,5 @@
 # Polytrack Controller Patch
-This is a Python script to patch controller support into the downloadable version of Polytrack.
+This is a Python script to patch controller support (with fully analog steering) into the downloadable version of Polytrack.
 
 This mod has only been tested with specifically PolyTrack-v0.6.2-linux-x64 and works perfectly on that build specifically
 
