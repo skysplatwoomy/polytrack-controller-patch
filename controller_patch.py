@@ -58,6 +58,36 @@ def patch_main(source: str) -> str:
     source = replace_once(source, old_input, new_input, "vehicle input manager")
     source = replace_once(
         source,
+        'this._gamepadDown=!1,this._steering=0,this._gamepad=null',
+        'this._gamepadDown=!1,this._steering=0,this._gamepadActive=!1,this._gamepad=null',
+        "gamepad source state",
+    )
+    source = replace_once(
+        source,
+        'const e=null!=this._gamepad||this._gamepadUp||this._gamepadDown||0!=this._steering||this._lastGamepadB;this._gamepad=null,this._lastGamepadB=!1,',
+        'const e=null!=this._gamepad||this._gamepadActive||this._gamepadUp||this._gamepadDown||0!=this._steering||this._lastGamepadB;this._gamepad=null,this._gamepadActive=!1,this._lastGamepadB=!1,',
+        "gamepad clear source state",
+    )
+    source = replace_once(
+        source,
+        'const e=this._findGamepad();if(null==e)return this._clearGamepad(),void 0;const t=e.axes?.[0]??0,',
+        'const e=this._findGamepad();if(null==e)return this._clearGamepad(),void 0;this._gamepadActive=!0;const t=e.axes?.[0]??0,',
+        "gamepad active state",
+    )
+    source = replace_once(
+        source,
+        'this._gamepad=null,this._lastGamepadB=!1,this._gamepadUp=!1,this._gamepadDown=!1,this._steering=0}',
+        'this._gamepad=null,this._gamepadActive=!1,this._lastGamepadB=!1,this._gamepadUp=!1,this._gamepadDown=!1,this._steering=0}',
+        "gamepad dispose source state",
+    )
+    source = replace_once(
+        source,
+        'getControls(){return{up:this.up,right:this.right,down:this.down,left:this.left,reset:this.reset,steering:this.steering}}',
+        'getControls(){return{up:this.up,right:this.right,down:this.down,left:this.left,reset:this.reset,steering:this.steering,analogSteering:this._gamepadActive}}',
+        "gamepad source controls",
+    )
+    source = replace_once(
+        source,
         '(0,R.gn)(this,Za,"f")&&((0,R.gn)(this,ra,"f").show((0,R.gn)(this,Yr,"f").get("Invalid replay detected!"),(0,R.gn)(this,Yr,"f").get("Ok"),(()=>{(0,R.gn)(this,ra,"f").hide()})),(0,R.GG)(this,Za,!1,"f"))',
         '(0,R.gn)(this,Za,"f")&&(0,R.GG)(this,Za,!1,"f")',
         "disable invalid replay dialog",
@@ -65,33 +95,33 @@ def patch_main(source: str) -> str:
     source = replace_once(
         source,
         'controlCar(e,t,n,i,a,s){const l={messageType:o.ControlCar,carId:e,up:t,right:n,down:i,left:a,reset:s};',
-        'controlCar(e,t,n,i,a,s,c){const l={messageType:o.ControlCar,carId:e,up:t,right:n,down:i,left:a,reset:s,steering:c??0};',
+        'controlCar(e,t,n,i,a,s,c,d){const l={messageType:o.ControlCar,carId:e,up:t,right:n,down:i,left:a,reset:s,steering:c??0,analogSteering:!!d||Number.isFinite(c)&&Math.abs(c)>1e-4};',
         "controlCar message shape",
     )
 
     source = replace_once(
         source,
         '(0,l.gn)(this,X,"f")?.controlCar(e,(0,l.gn)(this,ne,"f").up,(0,l.gn)(this,ne,"f").right,(0,l.gn)(this,ne,"f").down,(0,l.gn)(this,ne,"f").left,(0,l.gn)(this,ne,"f").reset)',
-        '(0,l.gn)(this,X,"f")?.controlCar(e,(0,l.gn)(this,ne,"f").up,(0,l.gn)(this,ne,"f").right,(0,l.gn)(this,ne,"f").down,(0,l.gn)(this,ne,"f").left,(0,l.gn)(this,ne,"f").reset,(0,l.gn)(this,ne,"f").steering)',
+        '(0,l.gn)(this,X,"f")?.controlCar(e,(0,l.gn)(this,ne,"f").up,(0,l.gn)(this,ne,"f").right,(0,l.gn)(this,ne,"f").down,(0,l.gn)(this,ne,"f").left,(0,l.gn)(this,ne,"f").reset,(0,l.gn)(this,ne,"f").steering,(0,l.gn)(this,ne,"f").analogSteering)',
         "initial car control",
     )
     source = replace_once(
         source,
         '(0,l.gn)(this,X,"f")?.controlCar(e,t.up,t.right,t.down,t.left,t.reset)',
-        '(0,l.gn)(this,X,"f")?.controlCar(e,t.up,t.right,t.down,t.left,t.reset,t.steering)',
+        '(0,l.gn)(this,X,"f")?.controlCar(e,t.up,t.right,t.down,t.left,t.reset,t.steering,t.analogSteering)',
         "car control callback",
     )
     source = replace_once(
         source,
         '(0,l.gn)(this,X,"f")?.controlCar((0,l.gn)(this,ee,"f"),!1,!1,!1,!1,!1)',
-        '(0,l.gn)(this,X,"f")?.controlCar((0,l.gn)(this,ee,"f"),!1,!1,!1,!1,!1,0)',
+        '(0,l.gn)(this,X,"f")?.controlCar((0,l.gn)(this,ee,"f"),!1,!1,!1,!1,!1,0,!1)',
         "disabled car control",
     )
 
     source = replace_once(
         source,
         '(0,l.gn)(this,X,"f")?.controlCar((0,l.gn)(this,ee,"f"),(0,l.gn)(this,ne,"f").up,(0,l.gn)(this,ne,"f").right,(0,l.gn)(this,ne,"f").down,(0,l.gn)(this,ne,"f").left,(0,l.gn)(this,ne,"f").reset)),(0,l.GG)(this,$,e,"f"))',
-        '(0,l.gn)(this,X,"f")?.controlCar((0,l.gn)(this,ee,"f"),(0,l.gn)(this,ne,"f").up,(0,l.gn)(this,ne,"f").right,(0,l.gn)(this,ne,"f").down,(0,l.gn)(this,ne,"f").left,(0,l.gn)(this,ne,"f").reset,(0,l.gn)(this,ne,"f").steering)),(0,l.GG)(this,$,e,"f"))',
+        '(0,l.gn)(this,X,"f")?.controlCar((0,l.gn)(this,ee,"f"),(0,l.gn)(this,ne,"f").up,(0,l.gn)(this,ne,"f").right,(0,l.gn)(this,ne,"f").down,(0,l.gn)(this,ne,"f").left,(0,l.gn)(this,ne,"f").reset,(0,l.gn)(this,ne,"f").steering,(0,l.gn)(this,ne,"f").analogSteering)),(0,l.GG)(this,$,e,"f"))',
         "reenabled car control",
     )
 
@@ -114,7 +144,7 @@ def patch_worker(source: str) -> str:
     source = replace_once(
         source,
         'r=new jo,n={up:!1,right:!1,down:!1,left:!1,reset:!1,buffer:[]}',
-        'r=new jo,n={up:!1,right:!1,down:!1,left:!1,reset:!1,steering:0,buffer:[]}',
+        'r=new jo,n={up:!1,right:!1,down:!1,left:!1,reset:!1,steering:0,analogSteering:!1,buffer:[]}',
         "live control state",
     )
     source = replace_once(
@@ -129,28 +159,31 @@ def patch_worker(source: str) -> str:
         raise RuntimeError(f"queued controller state: expected two matches, found {queued_count}")
     source = source.replace(
         queued,
-        's.userControls.buffer.push({frame:r,up:t.up,right:t.right,down:t.down,left:t.left,reset:t.reset,steering:t.steering??0})',
+        's.userControls.buffer.push({frame:r,up:t.up,right:t.right,down:t.down,left:t.left,reset:t.reset,steering:t.steering??0,analogSteering:!!t.analogSteering})',
     )
     source = replace_once(
         source,
         's.userControls.buffer[s.userControls.buffer.length-1]={frame:r,up:t.up,right:t.right,down:t.down,left:t.left,reset:t.reset}',
-        's.userControls.buffer[s.userControls.buffer.length-1]={frame:r,up:t.up,right:t.right,down:t.down,left:t.left,reset:t.reset,steering:t.steering??0}',
+        's.userControls.buffer[s.userControls.buffer.length-1]={frame:r,up:t.up,right:t.right,down:t.down,left:t.left,reset:t.reset,steering:t.steering??0,analogSteering:!!t.analogSteering}',
         "replaced controller state",
     )
     source = replace_once(
         source,
         'null!=e&&(t.userControls.up=e.up,t.userControls.right=e.right,t.userControls.down=e.down,t.userControls.left=e.left,t.userControls.reset=e.reset)',
-        'null!=e&&(t.userControls.up=e.up,t.userControls.right=e.right,t.userControls.down=e.down,t.userControls.left=e.left,t.userControls.reset=e.reset,t.userControls.steering=e.steering??0)',
+        'null!=e&&(t.userControls.up=e.up,t.userControls.right=e.right,t.userControls.down=e.down,t.userControls.left=e.left,t.userControls.reset=e.reset,t.userControls.steering=e.steering??0,t.userControls.analogSteering=!!e.analogSteering)',
         "applied controller state",
     )
     source = replace_once(
         source,
         'i.push({car:t,controls:{up:t.userControls.up,right:t.userControls.right,down:t.userControls.down,left:t.userControls.left,reset:t.userControls.reset}})',
-        'i.push({car:t,controls:{up:t.userControls.up,right:t.userControls.right,down:t.userControls.down,left:t.userControls.left,reset:t.userControls.reset,steering:t.userControls.steering}})',
+        'i.push({car:t,controls:{up:t.userControls.up,right:t.userControls.right,down:t.userControls.down,left:t.userControls.left,reset:t.userControls.reset,steering:t.userControls.steering,analogSteering:t.userControls.analogSteering}})',
         "realtime controls",
     )
     old_update = 'function n(e,r){t.ccall("updateCarModel","void",["number","boolean","boolean","boolean","boolean","boolean","number"],[e.id,r.up,r.right,r.down,r.left,r.reset,i]);return new Uint8Array(t.HEAPU8.buffer,i,227).slice().buffer}'
     new_update = (
+        # Keep the original digital bridge intact for keyboard input, replay
+        # playback, and replay verification. Only live gamepad controls opt
+        # into the analog bridge below.
         # The native physics ABI still exposes steering as two digital buttons.
         # It continuously moves the wheel toward zero when neither is held, so
         # feed back the serialized wheel angle and close a small position loop.
@@ -165,9 +198,15 @@ def patch_worker(source: str) -> str:
         # drifting, providing the countersteering authority the player expects.
         # The native output starts with a four-byte car id; omitting it reads a
         # speed byte as the flags byte and makes every stick position saturate.
-        'function n(e,r){let s=r.right,o=r.left;const a=Math.abs(Number.isFinite(e.nativeSpeed)?e.nativeSpeed:0),l=Math.min(.410258,155/Math.pow(Math.max(1,a),1.55)),c=Number.isFinite(e.driftSteering)?e.driftSteering:0,h=l+(.410258-l)*c,d=Number.isFinite(r.steering)?-Math.max(-1,Math.min(1,r.steering))*h:0,u=Math.max(2e-5,.002*h);if(!s&&!o){const t=Number.isFinite(e.nativeSteering)?e.nativeSteering:0;d-t<-u?s=!0:d-t>u&&(o=!0)}t.ccall("updateCarModel","void",["number","boolean","boolean","boolean","boolean","boolean","number"],[e.id,r.up,s,r.down,o,r.reset,i]);const f=new DataView(t.HEAPU8.buffer);e.nativeSpeed=f.getFloat32(i+4+3,!0);let p=i+4+3+4,g=t.HEAPU8[p++];2&g&&(p+=3),p+=2+12+16;const m=t.HEAPU8[p++];p+=4*m;for(let e=0;e<4;e++)8<<e&g&&(p+=24);const A=32&g?f.getFloat32(p+56,!0):1,v=64&g?f.getFloat32(p+60,!0):1;e.isDrifting?Math.max(A,v)>.9&&(e.isDrifting=!1):A<.4&&v<.4&&(e.isDrifting=!0);const b=Number.isFinite(e.driftSteering)?e.driftSteering:0;e.driftSteering=Math.max(0,Math.min(1,b+(e.isDrifting?0.0125:-.004))),e.nativeSteering=f.getFloat32(p+64,!0);return new Uint8Array(t.HEAPU8.buffer,i,227).slice().buffer}'
+        'function n(e,r){t.ccall("updateCarModel","void",["number","boolean","boolean","boolean","boolean","boolean","number"],[e.id,r.up,r.right,r.down,r.left,r.reset,i]);return new Uint8Array(t.HEAPU8.buffer,i,227).slice().buffer}function controllerAnalogStep(e,r){let s=r.right,o=r.left;const a=Math.abs(Number.isFinite(e.nativeSpeed)?e.nativeSpeed:0),l=Math.min(.410258,155/Math.pow(Math.max(1,a),1.55)),c=Number.isFinite(e.driftSteering)?e.driftSteering:0,h=l+(.410258-l)*c,d=Number.isFinite(r.steering)?-Math.max(-1,Math.min(1,r.steering))*h:0,u=Math.max(2e-5,.002*h);if(!s&&!o){const t=Number.isFinite(e.nativeSteering)?e.nativeSteering:0;d-t<-u?s=!0:d-t>u&&(o=!0)}t.ccall("updateCarModel","void",["number","boolean","boolean","boolean","boolean","boolean","number"],[e.id,r.up,s,r.down,o,r.reset,i]);const f=new DataView(t.HEAPU8.buffer);e.nativeSpeed=f.getFloat32(i+4+3,!0);let p=i+4+3+4,g=t.HEAPU8[p++];2&g&&(p+=3),p+=2+12+16;const m=t.HEAPU8[p++];p+=4*m;for(let e=0;e<4;e++)8<<e&g&&(p+=24);const A=32&g?f.getFloat32(p+56,!0):1,v=64&g?f.getFloat32(p+60,!0):1;e.isDrifting?Math.max(A,v)>.9&&(e.isDrifting=!1):A<.4&&v<.4&&(e.isDrifting=!0);const b=Number.isFinite(e.driftSteering)?e.driftSteering:0;e.driftSteering=Math.max(0,Math.min(1,b+(e.isDrifting?0.0125:-.004))),e.nativeSteering=f.getFloat32(p+64,!0);return new Uint8Array(t.HEAPU8.buffer,i,227).slice().buffer}'
     )
     source = replace_once(source, old_update, new_update, "native steering bridge")
+    source = replace_once(
+        source,
+        'r.push(n(t,e))',
+        'r.push(e.analogSteering||Number.isFinite(e.steering)&&Math.abs(e.steering)>1e-4?controllerAnalogStep(t,e):n(t,e))',
+        "live analog steering selection",
+    )
     return source
 
 
