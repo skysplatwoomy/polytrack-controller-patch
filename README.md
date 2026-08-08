@@ -5,9 +5,13 @@ This mod has only been tested with specifically PolyTrack-v0.6.2-linux-x64 and w
 
 ## Usage
 
+Navigate to the root folder of your game files, and first rename your app.asar to have a copy:
+```
+mv resources/app.asar resources/original.asar
+```
 Download the script and place it in the root folder of your game files and run the python script from the terminal:
 ```
-python3 controller_patch.py
+python3 controller_patch.py resources/original.asar resources/app.asar
 ```
 
 Once it is done running, you may run the newly patched game from that same directory.
