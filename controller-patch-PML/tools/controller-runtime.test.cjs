@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const source = fs.readFileSync(
-  new URL("../1.0.1/main.mod.js", `file://${__filename}`),
+  new URL("../1.0.0/main.mod.js", `file://${__filename}`),
   "utf8",
 );
 const start = source.indexOf("function controllerRuntime() {");
@@ -114,6 +114,12 @@ assert.equal(manager.bindingDown(pad, { kind: "button", index: 9 }, false), fals
 const fake = (name, left, top) => ({
   name,
   type: "button",
+  classList: {
+    values: new Set(),
+    add(...values) { values.forEach(value => this.values.add(value)); },
+    remove(...values) { values.forEach(value => this.values.delete(value)); },
+    contains(value) { return this.values.has(value); },
+  },
   getBoundingClientRect() {
     return { left, top, width: 80, height: 40, right: left + 80, bottom: top + 40 };
   },
@@ -129,8 +135,11 @@ const d = fake("d", 120, 80);
 const root = { contains() { return true; }, matches() { return false; } };
 manager.candidates = () => [a, b, c, d];
 manager.setFocus(a);
+assert.equal(a.classList.contains("polytrack-controller-focused"), true);
 manager.moveFocus(root, "right");
 assert.equal(manager.focused, b);
+assert.equal(a.classList.contains("polytrack-controller-focused"), false);
+assert.equal(b.classList.contains("polytrack-controller-focused"), true);
 manager.moveFocus(root, "down");
 assert.equal(manager.focused, d);
 manager.moveFocus(root, "left");
@@ -149,6 +158,8 @@ const activationRoot = {
 manager.candidates = () => [first];
 manager.setFocus(null);
 manager.resetMenuState();
+buttons[0] = { value: 0, pressed: false };
+manager.refreshBlocked(pad);
 buttons[0] = { value: 1, pressed: true };
 manager.updateMenu(pad, activationRoot, 0);
 assert.equal(clicks, 0, "A must not activate a newly chosen fallback target");
@@ -157,6 +168,16 @@ manager.updateMenu(pad, activationRoot, 16);
 buttons[0] = { value: 1, pressed: true };
 manager.updateMenu(pad, activationRoot, 32);
 assert.equal(clicks, 1);
+
+manager.resetMenuState();
+manager.markMenuTransition(pad, 100);
+assert.equal(manager.menuButtonDown(pad, 0, 100), false, "transition debounce must suppress held A");
+buttons[0] = { value: 0, pressed: false };
+manager.refreshBlocked(pad);
+assert.equal(manager.menuButtonDown(pad, 0, 200), false, "cooldown must survive a quick release");
+assert.equal(manager.menuButtonDown(pad, 0, 300), false);
+buttons[0] = { value: 1, pressed: true };
+assert.equal(manager.menuButtonDown(pad, 0, 300), true, "A must re-arm after the cooldown");
 
 const leftEntry = fake("leaderboard-entry", 50, 300);
 const watch = fake("watch", 700, 700);

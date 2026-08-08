@@ -14,7 +14,7 @@ if (!mainBundlePath || !workerBundlePath) {
   process.exit(2);
 }
 
-const modPath = new URL("../1.0.1/main.mod.js", import.meta.url);
+const modPath = new URL("../1.0.0/main.mod.js", import.meta.url);
 let modSource = readFileSync(modPath, "utf8");
 modSource = modSource.replace(
   /import\s*\{[\s\S]*?\}\s*from\s*"[^"]+";\s*/,
@@ -122,6 +122,9 @@ writeFileSync(`${outputPrefix}-main.bundle.js`, transformedMain);
 writeFileSync(`${outputPrefix}-simulation_worker.bundle.js`, worker);
 
 assert.ok(globalFunction.includes("window.__polytrackController=new ControllerManager()"));
+assert.ok(globalFunction.includes("menuDebounceUntil"));
+assert.ok(globalFunction.includes("polytrack-controller-focused"));
+assert.ok(globalFunction.includes("markMenuTransition"));
 assert.ok(globalFunction.includes("get analogSteering()"));
 assert.ok(globalFunction.includes("const analogSteering = null == d"));
 assert.ok(globalFunction.includes('(0, R.gn)(this, Da, "f").update();'));
