@@ -2,8 +2,9 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 
+const modVersion = process.argv[2] ?? "1.0.1";
 const source = fs.readFileSync(
-  new URL("../1.0.0/main.mod.js", `file://${__filename}`),
+  new URL(`../${modVersion}/main.mod.js`, `file://${__filename}`),
   "utf8",
 );
 const start = source.indexOf("function controllerRuntime() {");
@@ -51,7 +52,13 @@ const manager = window.__polytrackController;
 const buttons = Array.from({ length: 17 }, () => ({ value: 0, pressed: false }));
 const pad = { index: 0, connected: true, mapping: "standard", buttons, axes: [0, 0, 0, 0] };
 
-assert.equal(Object.keys(manager.config.actions).length, 33);
+assert.equal(Object.keys(manager.config.actions).length, modVersion === "1.0.1" ? 35 : 33);
+if (modVersion === "1.0.1") {
+  for (const name of ["SpectatorMoveUp", "SpectatorMoveDown"]) {
+    assert.ok(name in manager.config.actions, `${name} must be bindable`);
+    assert.ok(manager.config.actions[name].every(value => !value), `${name} must default to unbound`);
+  }
+}
 assert.equal(manager.config.actions.VehicleAccelerate[0].index, 7);
 assert.equal(manager.config.actions.VehicleStartReset[0].index, 1);
 assert.ok(manager.config.actions.EditorDelete.every(value => !value));

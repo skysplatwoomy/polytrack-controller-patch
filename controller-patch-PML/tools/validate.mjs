@@ -4,17 +4,24 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import vm from "node:vm";
 
-const [mainBundlePath, workerBundlePath, outputPrefix = "/tmp/controller-patch"] =
+const [mainBundlePath, workerBundlePath, outputPrefix = "/tmp/controller-patch", modVersion = "1.0.1"] =
   process.argv.slice(2);
 
 if (!mainBundlePath || !workerBundlePath) {
   console.error(
-    "usage: node tools/validate.mjs <pml-main.bundle.js> <pml-simulation_worker.bundle.js> [output-prefix]",
+    "usage: node tools/validate.mjs <pml-main.bundle.js> <pml-simulation_worker.bundle.js> [output-prefix] [mod-version]",
   );
   process.exit(2);
 }
 
-const modPath = new URL("../1.0.0/main.mod.js", import.meta.url);
+const SUPPORTED_MOD_VERSIONS = new Set(["1.0.0", "1.0.1"]);
+if (!SUPPORTED_MOD_VERSIONS.has(modVersion)) {
+  console.error(`unsupported mod version: ${modVersion} (expected one of ${[...SUPPORTED_MOD_VERSIONS].join(", ")})`);
+  process.exit(2);
+}
+const VEHICLE_INPUT_FIELD = modVersion === "1.0.0" ? "Da" : "qa";
+
+const modPath = new URL(`../${modVersion}/main.mod.js`, import.meta.url);
 let modSource = readFileSync(modPath, "utf8");
 modSource = modSource.replace(
   /import\s*\{[\s\S]*?\}\s*from\s*"[^"]+";\s*/,
@@ -105,7 +112,18 @@ function applyMixin(source, mixin, label) {
 const fullMain = readFileSync(mainBundlePath, "utf8");
 const marker = "let globalFunc = ";
 const functionStart = fullMain.indexOf(marker) + marker.length;
-const functionEnd = fullMain.indexOf(";\n    ActivePolyModLoader.preInitMods();", functionStart);
+const END_MARKERS = [
+  ";\n    ActivePolyModLoader.preInitMods().then(() => globalFunc());",
+  ";\n    ActivePolyModLoader.preInitMods();",
+];
+let functionEnd = -1;
+for (const endMarker of END_MARKERS) {
+  const index = fullMain.indexOf(endMarker, functionStart);
+  if (index !== -1) {
+    functionEnd = index;
+    break;
+  }
+}
 assert.ok(functionStart >= marker.length && functionEnd > functionStart, "PML globalFunc not found");
 
 let globalFunction = fullMain.slice(functionStart, functionEnd);
@@ -127,7 +145,10 @@ assert.ok(globalFunction.includes("polytrack-controller-focused"));
 assert.ok(globalFunction.includes("markMenuTransition"));
 assert.ok(globalFunction.includes("get analogSteering()"));
 assert.ok(globalFunction.includes("const analogSteering = null == d"));
-assert.ok(globalFunction.includes('(0, R.gn)(this, Da, "f").update();'));
+assert.ok(
+  globalFunction.includes(`(0, R.gn)(this, ${VEHICLE_INPUT_FIELD}, "f").update();`),
+  "VehicleInput update() call missing",
+);
 assert.ok(globalFunction.includes("polytrackControllerAction === t"));
 assert.ok(globalFunction.includes("return Promise.resolve({ uploadId: null"));
 assert.ok(!globalFunction.includes('get("Invalid replay detected!")'));
@@ -143,5 +164,5 @@ assert.ok(worker.includes('.TestDeterminism: {'), "PML determinism mixin anchor 
 assert.ok(worker.includes('"lib/polytrack_physics.js"'), "PML physics URL mixin anchor must remain");
 
 console.log(
-  `validated ${mainMixins.length} main mixins and ${workerMixins.length} worker mixins`,
+  `validated ${mainMixins.length} main mixins and ${workerMixins.length} worker mixins for mod ${modVersion}`,
 );
